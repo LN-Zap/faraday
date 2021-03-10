@@ -15,6 +15,14 @@ RUN apk add --no-cache --update alpine-sdk \
 &&  make \
 &&  make install
 
+# Grab and install the latest version of lndconnect.
+WORKDIR $GOPATH/src/github.com/LN-Zap/lndconnect
+RUN git clone https://github.com/LN-Zap/lndconnect . \
+  && git reset --hard v0.2.0 \
+  && make \
+  && make install \
+  && cp /go/bin/lndconnect /bin/
+
 # Start a new, final image.
 FROM alpine as final
 
@@ -26,10 +34,10 @@ RUN apk --no-cache add \
 # Copy the binaries from the builder image.
 COPY --from=builder /go/bin/faraday /bin/
 COPY --from=builder /go/bin/frcli /bin/
+COPY --from=builder /go/bin/lndconnect /bin/
 
 # Expose faraday ports (rpc).
 EXPOSE 8465
 
 # Specify the start command and entrypoint as the faraday daemon.
 ENTRYPOINT ["faraday"]
-
