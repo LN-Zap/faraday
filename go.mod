@@ -172,4 +172,8 @@ require (
 // allows us to specify that as an option.
 replace google.golang.org/protobuf => github.com/lightninglabs/protobuf-go-hex-display v1.30.0-hex-display
 
+// Tempoarily using our forked lndclient with the updated max recv size until the PR is reviewed and approved upstream
+// https://github.com/lightninglabs/lndclient/pull/205
+replace github.com/lightninglabs/lndclient => github.com/LN-Zap/lndclient v0.17.4-6-strike
+
 go 1.22.3
