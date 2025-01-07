@@ -131,3 +131,35 @@ func ListChannels(ctx context.Context, lnd lndclient.LightningClient,
 		return resp, nil
 	}
 }
+
+// ListTransactions makes a set of paginated calls to lnd to get our full set
+// of onchain transactions.
+func ListTransactions(ctx context.Context, startHeight, endHeight int32, lnd lndclient.LightningClient) ([]lndclient.Transaction, error) {
+	var transactions []lndclient.Transaction
+
+	query := func(offsetHeight, endHeight uint64) (uint64, uint64, error) {
+		resp, err := lnd.ListTransactions(ctx, int32(offsetHeight), int32(endHeight))
+		if err != nil {
+			return 0, 0, err
+		}
+
+		transactions = append(transactions, resp...)
+
+		if len(resp) == 0 {
+			return 0, 0, nil
+		}
+
+		lastHeight := uint64(resp[len(resp)-1].BlockHeight + 1)
+		return lastHeight, uint64(len(resp)), nil
+	}
+
+	// Make paginated calls to the transactions API, starting at startHeight and
+	// querying until endHeight.
+	if err := paginater.QueryPaginated(
+		ctx, query, uint64(startHeight), uint64(endHeight),
+	); err != nil {
+		return nil, fmt.Errorf("ListTransactions failed: %w", err)
+	}
+
+	return transactions, nil
+}

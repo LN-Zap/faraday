@@ -120,7 +120,10 @@ func NewOnChainConfig(ctx context.Context, lnd lndclient.LndServices, startTime,
 			return lnd.Client.PendingChannels(ctx)
 		},
 		OnChainTransactions: func() ([]lndclient.Transaction, error) {
-			return lnd.Client.ListTransactions(ctx, 0, 0)
+			return lndwrap.ListTransactions(
+				ctx, 0, 0,
+				lnd.Client,
+			)
 		},
 		ListSweeps: func() ([]string, error) {
 			return lnd.WalletKit.ListSweeps(ctx, 0)
